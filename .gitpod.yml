@@ -1,0 +1,17 @@
+image:
+  file: .gitpod.Dockerfile
+
+ports:
+  - port: 8000
+    onOpen: open-preview
+  # - port: 3436
+  #   onOpen: ignore
+
+tasks:
+  - init: npm install
+    command: npm start
+    name: Server
+
+vscode:
+  extensions:
+    - dbaeumer.vscode-eslint@1.9.1:YVcwmzKVVl+zZ+wMB02GjQ==

@@ -1,0 +1,10 @@
+{
+  "files.exclude": {
+    ".cache": true,
+    ".git": true,
+    ".theia": true,
+    "node_modules": true,
+    "dist": true
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
