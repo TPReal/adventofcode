@@ -18,7 +18,7 @@ function getTree(): Map<string, Node> {
   return nodes;
 }
 
-export function run1() {
+function run1() {
   const tree = getTree();
   let orbits = 0;
   for (const node of tree.values()) {
@@ -31,7 +31,7 @@ export function run1() {
   log(orbits);
 }
 
-export function run2() {
+function run2() {
   const tree = getTree();
   function ancestors(node: string) {
     const anc = [];

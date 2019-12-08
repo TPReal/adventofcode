@@ -7,14 +7,14 @@ const INPUTS = `\
 
 const INPUT = INPUTS[0];
 
-export function run1() {
+function run1() {
   const comp = IntcodeComputer.parse(INPUT);
   comp.passIn(1);
   comp.run();
   log(comp.output);
 }
 
-export function run2() {
+function run2() {
   const comp = IntcodeComputer.parse(INPUT);
   comp.passIn(5);
   comp.run();

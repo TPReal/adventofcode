@@ -8,12 +8,10 @@ export interface InOut {
 
 }
 
-export class Halt extends Error {
-}
-
 export class IntcodeComputer {
 
   ip = 0;
+  finished = false;
 
   input: number[] = [];
   output: number[] = [];
@@ -25,12 +23,15 @@ export class IntcodeComputer {
     return new IntcodeComputer(memory.split(",").map(v => Number(v)), inOut);
   }
 
-  passIn(v: number | number[]) {
-    this.input.push(...Array.isArray(v) ? v : [v]);
+  passIn(...vs: (number | number[])[]) {
+    this.input.push(...vs.flat());
   }
 
   getOut() {
-    return this.output.shift();
+    const out = this.output.shift();
+    if (out === undefined)
+      throw new Error(`No output`);
+    return out;
   }
 
   private read() {
@@ -88,21 +89,23 @@ export class IntcodeComputer {
         setMem(t, a === b ? 1 : 0);
       });
     else if (opCode === 99)
-      throw new Halt();
+      this.finished = true;
     else
       throw new Error(`Invalid cmd: ${cmd}`);
   }
 
-  run({debug = false} = {}) {
-    try {
-      for (; ;) {
-        if (debug)
-          log(this.toString());
-        this.step();
-      }
-    } catch (e) {
-      if (!(e instanceof Halt))
-        throw e;
+  run({debug = false, untilOutput = false}: {
+    debug?: boolean,
+    untilOutput?: boolean | number,
+  } = {}) {
+    const expectedOutputLen = typeof untilOutput === "number" ? untilOutput :
+      untilOutput ? 1 : Number.POSITIVE_INFINITY;
+    for (; ;) {
+      if (debug)
+        log(this.toString());
+      this.step();
+      if (this.finished || this.output.length >= expectedOutputLen)
+        break;
     }
   }
 
