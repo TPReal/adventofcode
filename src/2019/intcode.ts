@@ -11,6 +11,8 @@ export interface InOut {
 export class IntcodeComputer {
 
   ip = 0;
+  relBase = 0;
+
   finished = false;
 
   input: number[] = [];
@@ -50,9 +52,7 @@ export class IntcodeComputer {
   }
 
   step() {
-    const m = this.memory;
-    this.assertInMemRange(this.ip);
-    const cmd = m[this.ip];
+    const cmd = this.getMem(this.ip);
     const opCode = cmd % 100;
     if (opCode === 1)
       this.op(3, cmd, ([a, b], [t], {setMem}) => {
@@ -88,69 +88,87 @@ export class IntcodeComputer {
       this.op(3, cmd, ([a, b], [t], {setMem}) => {
         setMem(t, a === b ? 1 : 0);
       });
+    else if (opCode === 9)
+      this.op(1, cmd, ([a], _, {adjustRelBase}) => {
+        adjustRelBase(a);
+      });
     else if (opCode === 99)
       this.finished = true;
     else
       throw new Error(`Invalid cmd: ${cmd}`);
   }
 
-  run({debug = false, untilOutput = false}: {
-    debug?: boolean,
+  run({untilOutput = false}: {
     untilOutput?: boolean | number,
   } = {}) {
     const expectedOutputLen = typeof untilOutput === "number" ? untilOutput :
       untilOutput ? 1 : Number.POSITIVE_INFINITY;
     for (; ;) {
-      if (debug)
-        log(this.toString());
       this.step();
       if (this.finished || this.output.length >= expectedOutputLen)
         break;
     }
   }
 
-  toString() {
-    const memStrs: (number | string)[] = [...this.memory];
-    memStrs[this.ip] = `[${memStrs[this.ip]}]`;
-    return memStrs.join(",");
-  }
-
   private op(numArgs: number, argModes: number,
     handler: (args: number[], revPosModeArgs: number[], actions: {
       setMem(p: number, v: number): void,
       setIp(l: number): void,
+      adjustRelBase(d: number): void,
     }) => void) {
     this.assertInMemRange(this.ip + 1 + numArgs);
-    const args: number[] = [];
     const posModeArgs: number[] = [];
+    const args: number[] = [];
     argModes = Math.floor(argModes / 100);
     for (let argIndex = 0; argIndex < numArgs; argIndex++) {
-      const memArg = this.memory[this.ip + 1 + argIndex];
-      if (argModes % 10)
-        args.push(memArg)
-      else {
-        this.assertInMemRange(memArg);
-        args.push(this.memory[memArg]);
-      }
-      posModeArgs.push(memArg);
+      const memArg = this.getMem(this.ip + 1 + argIndex);
+      const argMode = argModes % 10;
       argModes = Math.floor(argModes / 10);
+      let posModeArg;
+      let arg;
+      if (argMode === 0) {
+        posModeArg = memArg;
+        arg = this.getMem(memArg);
+      } else if (argMode === 1) {
+        posModeArg = Number.NaN;
+        arg = memArg;
+      } else if (argMode === 2) {
+        posModeArg = this.relBase + memArg;
+        arg = this.getMem(posModeArg);
+      } else
+        throw new Error(`Bad argmode: ${argMode}`);
+      posModeArgs.push(posModeArg);
+      args.push(arg);
     }
     let ipChanged = false;
     handler(args, posModeArgs.reverse(), {
       setMem: (p, v) => {
-        this.memory[p] = v;
+        this.setMem(p, v);
       },
-      setIp: (l) => {
+      setIp: l => {
         ipChanged = true;
         this.ip = l;
+      },
+      adjustRelBase: d => {
+        this.relBase += d;
       },
     });
     if (!ipChanged)
       this.ip += numArgs + 1;
   }
 
-  private assertInMemRange(l: number) {
-    if (l < 0 || l >= this.memory.length)
+  private getMem(p: number) {
+    this.assertInMemRange(p);
+    return this.memory[p] || 0;
+  }
+
+  private setMem(p: number, v: number) {
+    this.assertInMemRange(p);
+    this.memory[p] = v;
+  }
+
+  private assertInMemRange(p: number) {
+    if (p < 0)
       throw new Error(`Address outside of memory range`);
   }
 
