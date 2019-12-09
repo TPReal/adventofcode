@@ -11,6 +11,6 @@ export function run() {
   const comp = IntcodeComputer.parse(INPUT);
   comp.memory[1] = 12;
   comp.memory[2] = 2;
-  comp.run({debug: true});
+  comp.run();
   log(comp.memory[0]);
 }
