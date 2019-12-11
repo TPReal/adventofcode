@@ -5,5 +5,6 @@ import * as y2019d07 from './src/2019/d07';
 import * as y2019d08 from './src/2019/d08';
 import * as y2019d09 from './src/2019/d09';
 import * as y2019d10 from './src/2019/d10';
+import * as y2019d11 from './src/2019/d11';
 
-y2019d10.run();
+y2019d11.run();
