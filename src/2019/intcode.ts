@@ -2,9 +2,9 @@ import {log} from "../logger";
 
 export interface InOut {
 
-  read(): number | number[];
+  read?(): number | number[];
 
-  write(v: number): void;
+  write?(v: number): void;
 
 }
 
@@ -37,7 +37,7 @@ export class IntcodeComputer {
   }
 
   private read() {
-    if (!this.input.length && this.inOut)
+    if (!this.input.length && this.inOut && this.inOut.read)
       this.passIn(this.inOut.read());
     const read = this.input.shift();
     if (read === undefined)
@@ -47,7 +47,7 @@ export class IntcodeComputer {
 
   private write(v: number) {
     this.output.push(v);
-    if (this.inOut)
+    if (this.inOut && this.inOut.write)
       this.inOut.write(v);
   }
 
