@@ -12,3 +12,7 @@ function format(args: unknown[]) {
 export function log(...args: unknown[]) {
   OUTPUT.innerText += format(args) + "\n";
 }
+
+export function clearLog() {
+  OUTPUT.innerText = "";
+}

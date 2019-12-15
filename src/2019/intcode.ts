@@ -110,6 +110,25 @@ export class IntcodeComputer {
     }
   }
 
+  runNonBlocking({interval = 0, stepsPerBlock = 1}: {
+    interval?: number,
+    stepsPerBlock?: number,
+  }) {
+    let timer: number | undefined;
+    const step = () => {
+      for (let i = 0; i < stepsPerBlock; i++)
+        this.step();
+      if (!this.finished)
+        timer = setTimeout(step, interval);
+    };
+    setTimeout(step);
+    return {
+      stop: () => {
+        clearTimeout(timer);
+      },
+    };
+  }
+
   private op(numArgs: number, argModes: number,
     handler: (args: number[], revPosModeArgs: number[], actions: {
       setMem(p: number, v: number): void,
