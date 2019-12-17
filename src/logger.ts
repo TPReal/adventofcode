@@ -2,6 +2,7 @@ const OUTPUT = document.createElement("div");
 document.body.appendChild(OUTPUT);
 OUTPUT.style.fontFamily = "Monaco, Consolas, monospace";
 OUTPUT.style.whiteSpace = "pre";
+OUTPUT.style.fontSize = "0.6em";
 
 function format(args: unknown[]) {
   if (args.length === 1 && typeof args[0] === "string")
