@@ -11,7 +11,9 @@ function format(args: unknown[]) {
 }
 
 export function log(...args: unknown[]) {
-  OUTPUT.innerText += format(args) + "\n";
+  const line = document.createElement("div");
+  line.innerText = format(args);
+  OUTPUT.appendChild(line);
 }
 
 export function clearLog() {
