@@ -25,15 +25,36 @@ export class IntcodeComputer {
     return new IntcodeComputer(memory.split(",").map(v => Number(v)), inOut);
   }
 
-  passIn(...vs: (number | number[])[]) {
-    this.input.push(...vs.flat());
+  passIn(...vs: (number | number[] | string)[]) {
+    for (const item of vs.flat())
+      if (typeof item === "number")
+        this.input.push(item);
+      else if (typeof item === "string")
+        for (let i = 0; i < item.length; i++)
+          this.input.push(item.charCodeAt(i));
   }
 
-  getOut() {
-    const out = this.output.shift();
-    if (out === undefined)
+  getOut(): number;
+  getOut(length: number): number[];
+  getOut(length?: number) {
+    if (length)
+      return this.output.splice(0, length);
+    const out = this.getOut(1);
+    if (!out.length)
       throw new Error(`No output`);
-    return out;
+    return out[0];
+  }
+
+  getAllOut() {
+    return this.getOut(Number.POSITIVE_INFINITY);
+  }
+
+  getOutString(length = 1) {
+    return String.fromCharCode(...this.getOut(length));
+  }
+
+  getAllOutString() {
+    return this.getOutString(Number.POSITIVE_INFINITY);
   }
 
   private read() {

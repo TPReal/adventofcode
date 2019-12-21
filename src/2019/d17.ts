@@ -4,7 +4,7 @@ import {log} from "../logger";
 function run1() {
   const comp = IntcodeComputer.parse(INPUT);
   comp.run();
-  const map = comp.output.map(c => String.fromCharCode(c)).join("").trim().split("\n");
+  const map = comp.getAllOutString().trim().split("\n");
   log(map.map(r => r.split("").join(" ")).join("\n"));
   let sum = 0;
   for (let y = 1; y < map.length - 1; y++)
@@ -18,7 +18,7 @@ function run1() {
 function run2() {
   const comp = IntcodeComputer.parse(INPUT);
   comp.run();
-  const map = comp.output.map(c => String.fromCharCode(c)).join("").trim().split("\n");
+  const map = comp.getAllOutString().trim().split("\n");
   log(map.map(r => r.split("").join(" ")).join("\n"));
   let x = map[0].length - 1;
   let y = map.findIndex(r => r.includes("^"));
