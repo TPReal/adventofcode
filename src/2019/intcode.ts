@@ -1,5 +1,3 @@
-import {log} from "../logger";
-
 export interface InOut {
 
   read?(): number | number[];

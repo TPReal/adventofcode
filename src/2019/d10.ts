@@ -61,9 +61,9 @@ function run2() {
   const destroyOrder: {x: number, y: number}[] = [];
   let ai = -1;
   for (let i = 0; i < destroyCount; i++) {
-    do {
+    do
       ai = (ai + 1) % ordered.length;
-    } while (!ordered[ai].length)
+    while (!ordered[ai].length)
     const next = ordered[ai].pop();
     if (!next)
       throw new Error();

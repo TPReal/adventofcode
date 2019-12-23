@@ -14,7 +14,6 @@ function modulo(n: number): Modulo {
     align: (a: number) => (a + n) % n,
     add: (a: number, b: number) => (a + b + n) % n,
     mul: (a: number, b: number) => {
-      const args = [a, b];
       const direct = a * b;
       if (Number.isSafeInteger(direct))
         return direct % n;
