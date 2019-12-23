@@ -119,12 +119,13 @@ export class IntcodeComputer {
       throw new Error(`Invalid cmd: ${cmd}`);
   }
 
-  run({untilOutput = false}: {
+  run({untilOutput = false, maxSteps = Number.POSITIVE_INFINITY}: {
     untilOutput?: boolean | number,
+    maxSteps?: number,
   } = {}) {
     const expectedOutputLen = typeof untilOutput === "number" ? untilOutput :
       untilOutput ? 1 : Number.POSITIVE_INFINITY;
-    for (; ;) {
+    for (let i = 0; i < maxSteps; i++) {
       this.step();
       if (this.finished || this.output.length >= expectedOutputLen)
         break;
