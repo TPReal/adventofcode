@@ -18,5 +18,6 @@ import * as y2019d20 from './src/2019/d20';
 import * as y2019d21 from './src/2019/d21';
 import * as y2019d22 from './src/2019/d22';
 import * as y2019d23 from './src/2019/d23';
+import * as y2019d24 from './src/2019/d24';
 
-y2019d23.run();
+y2019d24.run();
