@@ -1,5 +1,5 @@
 import {IntcodeComputer} from "./intcode";
-import {clearLog, log} from "../logger";
+import {log} from "../logger";
 
 type Field = "#" | "." | "*" | " ";
 
@@ -51,6 +51,7 @@ async function run1() {
     return [p[0] + dirDelta[0], p[1] + dirDelta[1]];
   }
   const comp = IntcodeComputer.parse(INPUT);
+  const boardLog = log();
   async function step(dir: number) {
     const np = nPos(dir);
     comp.passIn(dir);
@@ -66,8 +67,7 @@ async function run1() {
       } else
         board.set(p, ".");
     }
-    clearLog();
-    log(board.toString());
+    boardLog.text = board.toString();
     return new Promise<number>(resolve => {
       setTimeout(() => resolve(out));
     });
@@ -106,6 +106,7 @@ async function run2() {
   const {board, oxy} = await run1();
   let oxyPoss = [oxy];
   let time = 0;
+  const boardLog = log();
   async function oxyStep() {
     const newOxyPoss: Pos[] = [];
     for (const oxyPos of oxyPoss) {
@@ -117,8 +118,7 @@ async function run2() {
         }
       }
     }
-    clearLog();
-    log(board.toString());
+    boardLog.text = board.toString();
     return new Promise<Pos[]>(resolve => {
       setTimeout(() => resolve(newOxyPoss));
     });

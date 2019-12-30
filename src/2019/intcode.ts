@@ -1,6 +1,6 @@
 export interface InOut {
 
-  read?(): number | number[];
+  read?(): number | number[] | string;
 
   write?(v: number): void;
 

@@ -1,7 +1,6 @@
 import {IntcodeComputer} from "./intcode";
 import {log} from "../logger";
 
-
 function run1() {
   let count = 0;
   const map = [];

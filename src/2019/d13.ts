@@ -1,5 +1,5 @@
 import {IntcodeComputer} from "./intcode";
-import {log, clearLog} from "../logger";
+import {log} from "../logger";
 
 type Item = " " | "#" | "*" | "=" | "o";
 
@@ -75,6 +75,8 @@ function run2() {
   let outs: number[] = [];
   let ballX = 0;
   let paddleX = 0;
+  const boardLog = log();
+  const scoreLog = log();
   const comp = IntcodeComputer.parse(INPUT, {
     write: v => {
       outs.push(v);
@@ -93,9 +95,8 @@ function run2() {
             paddleX = x;
         }
         outs = [];
-        clearLog()
-        log(board.toString());
-        log(score);
+        boardLog.text = board.toString();
+        scoreLog.text = score;
       }
     },
     read: () => {
