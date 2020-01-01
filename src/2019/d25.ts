@@ -15,6 +15,8 @@ const BAD_ITEMS = new Set([
   "escape pod",
 ]);
 
+const CHECKPOINT_ROOM = "Security Checkpoint";
+
 function parseOutput(lines: string[]) {
   function match(s: string, regExp: RegExp) {
     return s.match(regExp) || [];
@@ -33,16 +35,30 @@ function parseOutput(lines: string[]) {
 }
 
 function run1() {
+  log.setOptions({wrap: true});
   let out: number[] = [];
   let outLines: string[] = [];
-  log.setOptions({wrap: true});
+  const triedDoors = new Map<string, number>();
   const comp = IntcodeComputer.parse(INPUT, {
     read: async () => {
       const {name, doors, items} = parseOutput(outLines);
+      let doorsToTry;
       outLines = [];
-      const goodItems = items.filter(i => !BAD_ITEMS.has(i));
-      if (goodItems.length)
-        return goodItems.map(i => `take ${i}\n`).join("");
+      const commands = [];
+      if (name === CHECKPOINT_ROOM)
+        doorsToTry = ["south"];
+      else {
+        doorsToTry = doors;
+        for (const i of items)
+          if (!BAD_ITEMS.has(i))
+            commands.push(`take ${i}\n`);
+      }
+      const tried = triedDoors.get(name) || 0;
+      triedDoors.set(name, tried + 1);
+      if (tried < doorsToTry.length)
+        commands.push(doorsToTry[tried] + "\n");
+      if (commands.length)
+        return commands.join("");
       let input = await log.input();
       input = DIRS_SHORTCUTS.get(input) || input;
       return input + "\n";
