@@ -42,7 +42,7 @@ class LogLine {
   protected constructor(readonly elem: HTMLElement) {
   }
 
-  static create(options: Options) {
+  static create() {
     const elem = document.createElement("div");
     LOG.appendChild(elem);
     return new LogLine(elem);
@@ -70,7 +70,7 @@ export interface Log {
 
   (...args: unknown[]): LogLine;
 
-  input(): Promise<string>;
+  input(prompt?: string): Promise<string>;
 
   setOptions(opts: PartialOptions): void;
 
@@ -81,7 +81,8 @@ export interface Log {
 const currentOptions: Options = {...DEFAULT_OPTIONS};
 
 function logFunc(...args: unknown[]) {
-  const line = LogLine.create({...currentOptions});
+  const line = LogLine.create();
+  applyOptions(line.elem, currentOptions);
   line.text = args;
   line.options = currentOptions;
   return line;
@@ -91,15 +92,16 @@ logFunc.setOptions = (opts: PartialOptions) => {
   Object.assign(currentOptions, opts);
 }
 
-logFunc.input = () => {
+logFunc.input = (prompt = "?>") => {
   const logLine = logFunc();
-  const prompt = document.createElement("span");
-  logLine.elem.appendChild(prompt);
-  prompt.innerText = "?> ";
-  prompt.style.fontStyle = "italic";
+  const promptElem = document.createElement("span");
+  logLine.elem.appendChild(promptElem);
+  promptElem.innerText = prompt + " ";
+  promptElem.style.fontStyle = "italic";
   const input = document.createElement("input");
   logLine.elem.appendChild(input);
   applyOptionsInherit(input);
+  input.focus();
   input.style.padding = "0";
   return new Promise<string>(resolve => {
     input.addEventListener("keypress", e => {

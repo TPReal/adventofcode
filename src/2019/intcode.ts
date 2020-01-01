@@ -1,6 +1,8 @@
+type ReadValue = number | number[] | string;
+
 export interface InOut {
 
-  read?(): number | number[] | string;
+  read?(): ReadValue | Promise<ReadValue>;
 
   write?(v: number): void;
 
@@ -55,9 +57,9 @@ export class IntcodeComputer {
     return this.getOutString(Number.POSITIVE_INFINITY);
   }
 
-  private read() {
+  private async read() {
     if (!this.input.length && this.inOut && this.inOut.read)
-      this.passIn(this.inOut.read());
+      this.passIn(await this.inOut.read());
     const read = this.input.shift();
     if (read === undefined)
       throw new Error(`No input`);
@@ -70,45 +72,45 @@ export class IntcodeComputer {
       this.inOut.write(v);
   }
 
-  step() {
+  async step() {
     const cmd = this.getMem(this.ip);
     const opCode = cmd % 100;
     if (opCode === 1)
-      this.op(3, cmd, ([a, b], [t], {setMem}) => {
+      await this.op(3, cmd, ([a, b], [t], {setMem}) => {
         setMem(t, a + b);
       });
     else if (opCode === 2)
-      this.op(3, cmd, ([a, b], [t], {setMem}) => {
+      await this.op(3, cmd, ([a, b], [t], {setMem}) => {
         setMem(t, a * b);
       });
     else if (opCode === 3)
-      this.op(1, cmd, (_, [t], {setMem}) => {
-        setMem(t, this.read());
+      await this.op(1, cmd, async (_, [t], {setMem}) => {
+        setMem(t, await this.read());
       });
     else if (opCode === 4)
-      this.op(1, cmd, ([a]) => {
+      await this.op(1, cmd, ([a]) => {
         this.write(a);
       });
     else if (opCode === 5)
-      this.op(2, cmd, ([c, l], _, {setIp}) => {
+      await this.op(2, cmd, ([c, l], _, {setIp}) => {
         if (c)
           setIp(l);
       });
     else if (opCode === 6)
-      this.op(2, cmd, ([c, l], _, {setIp}) => {
+      await this.op(2, cmd, ([c, l], _, {setIp}) => {
         if (!c)
           setIp(l);
       });
     else if (opCode === 7)
-      this.op(3, cmd, ([a, b], [t], {setMem}) => {
+      await this.op(3, cmd, ([a, b], [t], {setMem}) => {
         setMem(t, a < b ? 1 : 0);
       });
     else if (opCode === 8)
-      this.op(3, cmd, ([a, b], [t], {setMem}) => {
+      await this.op(3, cmd, ([a, b], [t], {setMem}) => {
         setMem(t, a === b ? 1 : 0);
       });
     else if (opCode === 9)
-      this.op(1, cmd, ([a], _, {adjustRelBase}) => {
+      await this.op(1, cmd, ([a], _, {adjustRelBase}) => {
         adjustRelBase(a);
       });
     else if (opCode === 99)
@@ -117,14 +119,14 @@ export class IntcodeComputer {
       throw new Error(`Invalid cmd: ${cmd}`);
   }
 
-  run({untilOutput = false, maxSteps = Number.POSITIVE_INFINITY}: {
+  async run({untilOutput = false, maxSteps = Number.POSITIVE_INFINITY}: {
     untilOutput?: boolean | number,
     maxSteps?: number,
   } = {}) {
     const expectedOutputLen = typeof untilOutput === "number" ? untilOutput :
       untilOutput ? 1 : Number.POSITIVE_INFINITY;
     for (let i = 0; i < maxSteps; i++) {
-      this.step();
+      await this.step();
       if (this.finished || this.output.length >= expectedOutputLen)
         break;
     }
@@ -135,9 +137,9 @@ export class IntcodeComputer {
     stepsPerBlock?: number,
   }) {
     let timer: number | undefined;
-    const step = () => {
+    const step = async () => {
       for (let i = 0; i < stepsPerBlock; i++)
-        this.step();
+        await this.step();
       if (!this.finished)
         timer = setTimeout(step, interval);
     };
@@ -149,12 +151,12 @@ export class IntcodeComputer {
     };
   }
 
-  private op(numArgs: number, argModes: number,
+  private async op(numArgs: number, argModes: number,
     handler: (args: number[], revPosModeArgs: number[], actions: {
       setMem(p: number, v: number): void,
       setIp(l: number): void,
       adjustRelBase(d: number): void,
-    }) => void) {
+    }) => void | Promise<void>) {
     this.assertInMemRange(this.ip + 1 + numArgs);
     const posModeArgs: number[] = [];
     const args: number[] = [];
@@ -180,7 +182,7 @@ export class IntcodeComputer {
       args.push(arg);
     }
     let ipChanged = false;
-    handler(args, posModeArgs.reverse(), {
+    await handler(args, posModeArgs.reverse(), {
       setMem: (p, v) => {
         this.setMem(p, v);
       },

@@ -1,16 +1,60 @@
 import {IntcodeComputer} from "./intcode";
 import {log} from "../logger";
 
+const DIRS_SHORTCUTS = new Map([
+  ["w", "north"],
+  ["s", "south"],
+  ["a", "west"],
+  ["d", "east"],
+]);
+
+const BAD_ITEMS = new Set([
+  "infinite loop",
+  "photons",
+  "molten lava",
+  "escape pod",
+]);
+
+function parseOutput(lines: string[]) {
+  function match(s: string, regExp: RegExp) {
+    return s.match(regExp) || [];
+  }
+  const full = lines.join("");
+  const name = match(full, /== (.+?) ==/)[1];
+  const doorsPart = match(full, /\nDoors here lead:\n([\s\S]+?)\n\n/)[1];
+  const doors = doorsPart ? doorsPart.split("\n").map(l => l.slice(2)) : [];
+  const itemsPart = match(full, /\nItems here:\n([\s\S]+?)\n\n/)[1];
+  const items = itemsPart ? itemsPart.split("\n").map(l => l.slice(2)) : [];
+  return {
+    name,
+    doors,
+    items,
+  };
+}
+
 function run1() {
   let out: number[] = [];
+  let outLines: string[] = [];
   log.setOptions({wrap: true});
   const comp = IntcodeComputer.parse(INPUT, {
+    read: async () => {
+      const {name, doors, items} = parseOutput(outLines);
+      outLines = [];
+      const goodItems = items.filter(i => !BAD_ITEMS.has(i));
+      if (goodItems.length)
+        return goodItems.map(i => `take ${i}\n`).join("");
+      let input = await log.input();
+      input = DIRS_SHORTCUTS.get(input) || input;
+      return input + "\n";
+    },
     write: v => {
+      out.push(v);
       if (v === "\n".charCodeAt(0)) {
-        log(String.fromCharCode(...out));
+        const line = String.fromCharCode(...out);
+        log(line);
+        outLines.push(line);
         out = [];
-      } else
-        out.push(v);
+      }
     },
   });
   comp.run();
