@@ -1,3 +1,3 @@
-import * as y2020d04 from './src/2020/d04';
+import * as y2020d06 from './src/2020/d06';
 
-y2020d04.run();
+y2020d06.run();
